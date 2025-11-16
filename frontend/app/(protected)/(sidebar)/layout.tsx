@@ -10,7 +10,7 @@ import { AppSidebar } from "@/components/sidebar";
 // Authentication and onboarding flow are handled by middleware.
 export default function ProtectedLayout({ children }: { children: ReactNode }) {
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 lg:hidden">
