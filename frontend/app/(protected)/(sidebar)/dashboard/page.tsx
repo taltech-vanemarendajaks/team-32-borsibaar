@@ -98,7 +98,9 @@ export default function Dashboard() {
             if (Array.isArray(statsJson)) setSalesStats(statsJson);
           }
         } catch {
-          // ignore stats errors silently
+          // Ignore sales stats errors silently to prevent them from breaking the dashboard.
+          // Sales stats are supplementary data - if they fail to load, the user can still
+          // access their main dashboard functionality.
         }
 
         try {
@@ -111,7 +113,9 @@ export default function Dashboard() {
             if (Array.isArray(stationStatsJson)) setStationStats(stationStatsJson);
           }
         } catch {
-          // ignore stats errors silently
+          // Ignore station stats errors silently to maintain dashboard stability.
+          // Station statistics are optional analytics data - failures here shouldn't
+          // prevent users from accessing core dashboard features.
         }
       } else {
         setOrgName("No organization");
