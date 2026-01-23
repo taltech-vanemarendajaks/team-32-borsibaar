@@ -14,20 +14,6 @@ import {
   Trash,
 } from "lucide-react";
 
-interface InventoryTransactionResponseDto {
-  id: number;
-  inventoryId: number;
-  transactionType: string;
-  quantityChange: number;
-  quantityBefore: number;
-  quantityAfter: number;
-  referenceId?: string;
-  notes?: string;
-  createdBy: string;
-  createdByName?: string;
-  createdByEmail?: string;
-  createdAt: string;
-}
 import {
   Select,
   SelectContent,
@@ -46,35 +32,81 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
+interface InventoryTransactionResponseDto {
+  id: number;
+  inventoryId: number;
+  transactionType: string;
+  quantityChange: number;
+  quantityBefore: number;
+  quantityAfter: number;
+  referenceId?: string;
+  notes?: string;
+  createdBy: string;
+  createdByName?: string;
+  createdByEmail?: string;
+  createdAt: string;
+}
+
 export const dynamic = "force-dynamic";
 
+// ✅ COMMIT 1: Types + sorting state (key/dir)
+type InventoryItem = {
+  id: number;
+  productId: number;
+  productName: string;
+  basePrice: number | string;
+  minPrice?: number | string;
+  maxPrice?: number | string;
+  quantity: number | string;
+  updatedAt: string;
+};
+
+type SortKey = "productName" | "basePrice" | "quantity" | "updatedAt";
+type SortDir = "asc" | "desc";
+
 export default function Inventory() {
-  const [inventory, setInventory] = useState([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
+
+  // ✅ COMMIT 1: sorting state
+  const [sortKey, setSortKey] = useState<SortKey>("productName");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
+
+  const [selectedProduct, setSelectedProduct] = useState<InventoryItem | null>(
+    null
+  );
+
   const [transactionHistory, setTransactionHistory] = useState<
     InventoryTransactionResponseDto[]
   >([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
   const [formData, setFormData] = useState({
     quantity: "",
     notes: "",
     referenceId: "",
   });
+
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
   const [showDeleteProductModal, setShowDeleteProductModal] = useState(false);
-  const [categories, setCategories] = useState([]);
+
+  // kept as unknown arrays because backend DTOs missing
+  const [categories, setCategories] = useState<any[]>([]);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
+
   const [categoryForm, setCategoryForm] = useState({
     name: "",
     dynamicPricing: true,
   });
+
   const [productForm, setProductForm] = useState({
     name: "",
     description: "",
@@ -101,14 +133,11 @@ export default function Inventory() {
       if (!response.ok) throw new Error("Failed to fetch inventory");
 
       const data = await response.json();
-      setInventory(data);
+      setInventory(Array.isArray(data) ? data : []);
       setError(null);
     } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unknown error occurred");
-      }
+      if (err instanceof Error) setError(err.message);
+      else setError("An unknown error occurred");
     } finally {
       setLoading(false);
     }
@@ -119,7 +148,7 @@ export default function Inventory() {
       const response = await fetch("/api/backend/categories");
       if (response.ok) {
         const data = await response.json();
-        setCategories(data);
+        setCategories(Array.isArray(data) ? data : []);
       }
     } catch (err) {
       console.error("Error fetching categories:", err);
@@ -131,15 +160,13 @@ export default function Inventory() {
       setLoadingHistory(true);
       const response = await fetch(
         `/api/backend/inventory/product/${productId}/history`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
 
       if (!response.ok) throw new Error("Failed to fetch history");
 
       const data = await response.json();
-      setTransactionHistory(data);
+      setTransactionHistory(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error fetching history:", err);
       setTransactionHistory([]);
@@ -199,11 +226,8 @@ export default function Inventory() {
         notes: "",
       });
     } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      if (err instanceof Error) alert(err.message);
+      else alert("An unknown error occurred");
     }
   };
 
@@ -219,7 +243,6 @@ export default function Inventory() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          // @ts-expect-error: types aren't imported currently from backend
           productId: selectedProduct.productId,
           quantity: parseFloat(formData.quantity),
           notes: formData.notes,
@@ -231,22 +254,23 @@ export default function Inventory() {
       await fetchInventory();
       closeModals();
     } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      if (err instanceof Error) alert(err.message);
+      else alert("An unknown error occurred");
     }
   };
 
   const handleRemoveStock = async () => {
+    if (!selectedProduct) {
+      alert("No product selected");
+      return;
+    }
+
     try {
       const response = await fetch("/api/backend/inventory/remove", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          // @ts-expect-error: types aren't imported currently from backend
           productId: selectedProduct.productId,
           quantity: parseFloat(formData.quantity),
           referenceId: formData.referenceId,
@@ -262,22 +286,23 @@ export default function Inventory() {
       await fetchInventory();
       closeModals();
     } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      if (err instanceof Error) alert(err.message);
+      else alert("An unknown error occurred");
     }
   };
 
   const handleAdjustStock = async () => {
+    if (!selectedProduct) {
+      alert("No product selected");
+      return;
+    }
+
     try {
       const response = await fetch("/api/backend/inventory/adjust", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          // @ts-expect-error: types aren't imported currently from backend
           productId: selectedProduct.productId,
           newQuantity: parseFloat(formData.quantity),
           notes: formData.notes,
@@ -289,11 +314,8 @@ export default function Inventory() {
       await fetchInventory();
       closeModals();
     } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      if (err instanceof Error) alert(err.message);
+      else alert("An unknown error occurred");
     }
   };
 
@@ -314,22 +336,17 @@ export default function Inventory() {
       }
 
       setShowCreateCategoryModal(false);
-      setCategoryForm({
-        name: "",
-        dynamicPricing: true,
-      });
+      setCategoryForm({ name: "", dynamicPricing: true });
       await fetchCategories();
     } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      if (err instanceof Error) alert(err.message);
+      else alert("An unknown error occurred");
     }
-  }
+  };
 
-  const handleDeleteProduct = async (id: string) => {
+  const handleDeleteProduct = async (id: number) => {
     if (!id) return;
+
     try {
       const deleteResponse = await fetch(`/api/backend/product/${id}`, {
         method: "DELETE",
@@ -344,13 +361,10 @@ export default function Inventory() {
       setShowDeleteProductModal(false);
       await fetchInventory();
     } catch (err) {
-      if (err instanceof Error) {
-        alert(err.message);
-      } else {
-        alert("An unknown error occurred");
-      }
+      if (err instanceof Error) alert(err.message);
+      else alert("An unknown error occurred");
     }
-  }
+  };
 
   const closeModals = () => {
     setShowAddModal(false);
@@ -365,47 +379,70 @@ export default function Inventory() {
     setLoadingHistory(false);
   };
 
-  // @ts-expect-error: types aren't imported currently from backend
-  const openAddModal = (item) => {
+  const openAddModal = (item: InventoryItem) => {
     setSelectedProduct(item);
     setShowAddModal(true);
   };
 
-  // @ts-expect-error: types aren't imported currently from backend
-  const openDeleteModal = (item) => {
+  const openDeleteModal = (item: InventoryItem) => {
     setSelectedProduct(item);
     setShowDeleteProductModal(true);
-  }
+  };
 
-  // @ts-expect-error: types aren't imported currently from backend
-  const openRemoveModal = (item) => {
+  const openRemoveModal = (item: InventoryItem) => {
     setSelectedProduct(item);
     setShowRemoveModal(true);
   };
 
-  // @ts-expect-error: types aren't imported currently from backend
-  const openAdjustModal = (item) => {
+  const openAdjustModal = (item: InventoryItem) => {
     setSelectedProduct(item);
-    setFormData({ ...formData, quantity: item.quantity.toString() });
+    setFormData({ ...formData, quantity: String(item.quantity ?? "") });
     setShowAdjustModal(true);
   };
 
-  // @ts-expect-error: types aren't imported currently from backend
-  const openHistoryModal = async (item) => {
+  const openHistoryModal = async (item: InventoryItem) => {
     setSelectedProduct(item);
     setShowHistoryModal(true);
     await fetchTransactionHistory(item.productId);
   };
 
-  const filteredInventory = searchTerm?.trim().length > 0 ? inventory.filter((item) => {
-    // @ts-expect-error: types aren't imported currently from backend
-    return item.productName.toLowerCase().includes(searchTerm.toLowerCase())
-  }
-  ) : inventory;
+  // ✅ COMMIT 2: filter + sort
+  const filteredInventory =
+    searchTerm?.trim().length > 0
+      ? inventory.filter((item) =>
+          item.productName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      : inventory;
 
-  // @ts-expect-error: types aren't imported currently from backend
-  const getStockStatus = (quantity) => {
-    const qty = parseFloat(quantity);
+  const sortedInventory = filteredInventory.slice().sort((a, b) => {
+    const dir = sortDir === "asc" ? 1 : -1;
+
+    if (sortKey === "productName") {
+      return dir * a.productName.localeCompare(b.productName);
+    }
+
+    if (sortKey === "updatedAt") {
+      return (
+        dir *
+        (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime())
+      );
+    }
+
+    const toNum = (v: number | string | undefined) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+
+    if (sortKey === "basePrice") {
+      return dir * (toNum(a.basePrice) - toNum(b.basePrice));
+    }
+
+    // quantity
+    return dir * (toNum(a.quantity) - toNum(b.quantity));
+  });
+
+  const getStockStatus = (quantity: number | string) => {
+    const qty = Number(quantity);
     if (qty === 0)
       return { color: "text-red-100", bg: "bg-red-900", label: "Out of Stock" };
     if (qty < 10)
@@ -421,7 +458,7 @@ export default function Inventory() {
     return (
       <div className="min-h-screen w-full bg-background p-4 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading inventory...</p>
         </div>
       </div>
@@ -430,185 +467,225 @@ export default function Inventory() {
 
   return (
     <div className="min-h-screen bg-background p-4">
-        <div className="rounded-lg bg-card p-6 shadow-sm border-1 border-[color-mix(in oklab, var(--ring) 50%, transparent)]">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-100">
-                Inventory Management
-              </h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={() => setShowCreateCategoryModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-black rounded-lg hover:bg-blue-200 transition font-medium"
-              >
-                <ListPlus className="w-4 h-4" />
-                <span className="flex">New Category</span>
-              </Button>
-              <Button
-                onClick={() => setShowCreateProductModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-              >
-                <Plus className="w-4 h-4" />
-                <span className="flex">New Product</span>
-              </Button>
-              <div className="text-sm text-gray-400">
-                Total Items: {inventory.length}
-              </div>
-            </div>
+      <div className="rounded-lg bg-card p-6 shadow-sm border-1 border-[color-mix(in oklab, var(--ring) 50%, transparent)]">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Package className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-100">
+              Inventory Management
+            </h1>
           </div>
-
-          {error && (
-            <div className="mb-4 p-4 bg-red-950 border border-red-800 rounded-lg flex items-center gap-2 text-red-50">
-              <AlertCircle className="w-5 h-5" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 w-5 h-5" />
-            <Input
-              type="text"
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-400">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
-                    Product
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
-                    Current Price
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
-                    Min Price
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
-                    Max Price
-                  </th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-300">
-                    Quantity
-                  </th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-300">
-                    Status
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-300">
-                    Last Updated
-                  </th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-300">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredInventory.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="text-center py-8 text-gray-400">
-                      No inventory items found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredInventory.map((item) => {
-                    // @ts-expect-error: types aren't imported currently from backend
-                    const status = getStockStatus(item.quantity);
-                    return (
-                      <tr
-                        key={item.id}
-                        className="border-b border-gray-400 hover:bg-gray-800"
-                      >
-                        <td className="py-3 px-4">
-                          <div className="font-medium text-gray-300">
-                            {item.productName}
-                          </div>
-                          <div className="text-sm text-gray-400">
-                            ID: {item.productId}
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="text-lg font-semibold text-gray-300">
-                            {parseFloat(item.basePrice).toFixed(2)}€
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="text-lg text-gray-300">
-                            {isNaN(parseFloat(item.minPrice)) ? "--" : parseFloat(item.minPrice).toFixed(2)}€
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="text-lg text-gray-300">
-                            {isNaN(parseFloat(item.maxPrice)) ? "--" : parseFloat(item.maxPrice).toFixed(2)}€
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span className="text-lg font-semibold text-gray-300">
-                            {parseFloat(item.quantity).toFixed(2)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-center">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color}`}
-                          >
-                            {status.label}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 text-sm text-gray400">
-                          {new Date(item.updatedAt).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex justify-center gap-2 flex-wrap">
-                            <Button
-                              onClick={() => openAddModal(item)}
-                              className="p-2 text-green-100 bg-green-700 hover:bg-green-800 rounded-lg transition"
-                              title="Add Stock"
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              onClick={() => openRemoveModal(item)}
-                              className="p-2 text-red-100 bg-red-700 hover:bg-red-800 rounded-lg transition"
-                              title="Remove Stock"
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              onClick={() => openAdjustModal(item)}
-                              className="p-2 text-blue-100 bg-blue-700 hover:bg-blue-800 rounded-lg transition"
-                              title="Adjust Stock"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              onClick={() => openHistoryModal(item)}
-                              className="p-2 text-gray-400 bg-gray-700 hover:bg-gray-800 rounded-lg transition"
-                              title="View History"
-                            >
-                              <History className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              onClick={() => openDeleteModal(item)}
-                              className="p-2 text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition"
-                              title="Delete Product"
-                            >
-                              <Trash className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+          <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setShowCreateCategoryModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-100 text-black rounded-lg hover:bg-blue-200 transition font-medium"
+            >
+              <ListPlus className="w-4 h-4" />
+              <span className="flex">New Category</span>
+            </Button>
+            <Button
+              onClick={() => setShowCreateProductModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="flex">New Product</span>
+            </Button>
+            <div className="text-sm text-gray-400">Total Items: {inventory.length}</div>
           </div>
         </div>
 
+        {error && (
+          <div className="mb-4 p-4 bg-red-950 border border-red-800 rounded-lg flex items-center gap-2 text-red-50">
+            <AlertCircle className="w-5 h-5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 w-5 h-5" />
+          <Input
+            type="text"
+            placeholder="Search products..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* ✅ COMMIT 1: sorting controls */}
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="text-sm text-gray-400">Sort by:</div>
+
+          <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+            <SelectTrigger className="w-[220px]">
+              <SelectValue placeholder="Sort field" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="productName">Product name</SelectItem>
+              <SelectItem value="basePrice">Current price</SelectItem>
+              <SelectItem value="quantity">Quantity</SelectItem>
+              <SelectItem value="updatedAt">Last updated</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortDir} onValueChange={(v) => setSortDir(v as SortDir)}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Direction" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Ascending</SelectItem>
+              <SelectItem value="desc">Descending</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-400">
+                <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                  Product
+                </th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                  Current Price
+                </th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                  Min Price
+                </th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                  Max Price
+                </th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-300">
+                  Quantity
+                </th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-300">
+                  Status
+                </th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-300">
+                  Last Updated
+                </th>
+                <th className="text-center py-3 px-4 font-semibold text-gray-300">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {sortedInventory.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="text-center py-8 text-gray-400">
+                    No inventory items found
+                  </td>
+                </tr>
+              ) : (
+                sortedInventory.map((item) => {
+                  const status = getStockStatus(item.quantity);
+
+                  return (
+                    <tr
+                      key={item.id}
+                      className="border-b border-gray-400 hover:bg-gray-800"
+                    >
+                      <td className="py-3 px-4">
+                        <div className="font-medium text-gray-300">
+                          {item.productName}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                          ID: {item.productId}
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-4 text-center">
+                        <span className="text-lg font-semibold text-gray-300">
+                          {Number(item.basePrice).toFixed(2)}€
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-center">
+                        <span className="text-lg text-gray-300">
+                          {isNaN(Number(item.minPrice))
+                            ? "--"
+                            : Number(item.minPrice).toFixed(2)}
+                          €
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-center">
+                        <span className="text-lg text-gray-300">
+                          {isNaN(Number(item.maxPrice))
+                            ? "--"
+                            : Number(item.maxPrice).toFixed(2)}
+                          €
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-center">
+                        <span className="text-lg font-semibold text-gray-300">
+                          {Number(item.quantity).toFixed(2)}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-center">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color}`}
+                        >
+                          {status.label}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-sm text-gray-400">
+                        {new Date(item.updatedAt).toLocaleString()}
+                      </td>
+
+                      <td className="py-3 px-4">
+                        <div className="flex justify-center gap-2 flex-wrap">
+                          <Button
+                            onClick={() => openAddModal(item)}
+                            className="p-2 text-green-100 bg-green-700 hover:bg-green-800 rounded-lg transition"
+                            title="Add Stock"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => openRemoveModal(item)}
+                            className="p-2 text-red-100 bg-red-700 hover:bg-red-800 rounded-lg transition"
+                            title="Remove Stock"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => openAdjustModal(item)}
+                            className="p-2 text-blue-100 bg-blue-700 hover:bg-blue-800 rounded-lg transition"
+                            title="Adjust Stock"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => openHistoryModal(item)}
+                            className="p-2 text-gray-400 bg-gray-700 hover:bg-gray-800 rounded-lg transition"
+                            title="View History"
+                          >
+                            <History className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            onClick={() => openDeleteModal(item)}
+                            className="p-2 text-white bg-rose-600 hover:bg-rose-700 rounded-lg transition"
+                            title="Delete Product"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Create Product */}
       <Dialog
         open={showCreateProductModal}
         onOpenChange={setShowCreateProductModal}
@@ -620,6 +697,7 @@ export default function Inventory() {
               Add a new product to your inventory system.
             </DialogDescription>
           </DialogHeader>
+
           <div className="space-y-4 mt-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
@@ -636,6 +714,7 @@ export default function Inventory() {
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Category *
@@ -650,14 +729,15 @@ export default function Inventory() {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id.toString()}>
+                  {categories.map((cat: any) => (
+                    <SelectItem key={cat.id} value={String(cat.id)}>
                       {cat.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Price *
@@ -668,16 +748,14 @@ export default function Inventory() {
                 min="0"
                 value={productForm.currentPrice}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
-                    currentPrice: e.target.value,
-                  })
+                  setProductForm({ ...productForm, currentPrice: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0.00"
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Min price *
@@ -688,16 +766,14 @@ export default function Inventory() {
                 min="0"
                 value={productForm.minPrice}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
-                    minPrice: e.target.value,
-                  })
+                  setProductForm({ ...productForm, minPrice: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0.00"
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Max price *
@@ -708,16 +784,14 @@ export default function Inventory() {
                 min="0"
                 value={productForm.maxPrice}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
-                    maxPrice: e.target.value,
-                  })
+                  setProductForm({ ...productForm, maxPrice: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0.00"
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Description
@@ -725,16 +799,14 @@ export default function Inventory() {
               <Textarea
                 value={productForm.description}
                 onChange={(e) =>
-                  setProductForm({
-                    ...productForm,
-                    description: e.target.value,
-                  })
+                  setProductForm({ ...productForm, description: e.target.value })
                 }
                 className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows="3"
+                rows={3}
                 placeholder="Product description (optional)"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Initial Quantity
@@ -757,6 +829,7 @@ export default function Inventory() {
                 Leave empty or 0 for no initial stock
               </p>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">
                 Notes
@@ -771,6 +844,7 @@ export default function Inventory() {
                 placeholder="e.g., Initial stock from supplier"
               />
             </div>
+
             <Button
               onClick={handleCreateProduct}
               disabled={
@@ -788,7 +862,11 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showDeleteProductModal} onOpenChange={setShowDeleteProductModal}>
+      {/* Delete Product */}
+      <Dialog
+        open={showDeleteProductModal}
+        onOpenChange={setShowDeleteProductModal}
+      >
         <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle>Delete Product</DialogTitle>
@@ -800,10 +878,16 @@ export default function Inventory() {
 
           <div className="mt-4">
             <p className="text-sm text-gray-300">
-              Product: <span className="font-semibold">{selectedProduct?.productName}</span>
+              Product:{" "}
+              <span className="font-semibold">
+                {selectedProduct?.productName}
+              </span>
             </p>
             <p className="text-sm text-gray-400 mt-2">
-              ID: <span className="font-mono">{selectedProduct?.productId ?? selectedProduct?.id}</span>
+              ID:{" "}
+              <span className="font-mono">
+                {selectedProduct?.productId ?? selectedProduct?.id}
+              </span>
             </p>
           </div>
 
@@ -830,63 +914,68 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showCreateCategoryModal} onOpenChange={setShowCreateCategoryModal}>
+      {/* Create Category */}
+      <Dialog
+        open={showCreateCategoryModal}
+        onOpenChange={setShowCreateCategoryModal}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Create New Category</DialogTitle>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Category Name *
-              </label>
-              <Input
-                type="text"
-                value={categoryForm.name}
-                onChange={(e) =>
-                  setCategoryForm({
-                    ...categoryForm,
-                    name: e.target.value,
-                  })
-                }
-                className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Category name"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">
-                Dynamic Pricing *
-              </label>
-              <Select
-                value={categoryForm.dynamicPricing ? "enabled" : "disabled"}
-                onValueChange={(value) =>
-                  setCategoryForm({
-                    ...categoryForm,
-                    dynamicPricing: value === "enabled",
-                  })
-                }
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Category Name *
+                </label>
+                <Input
+                  type="text"
+                  value={categoryForm.name}
+                  onChange={(e) =>
+                    setCategoryForm({ ...categoryForm, name: e.target.value })
+                  }
+                  className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Category name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Dynamic Pricing *
+                </label>
+                <Select
+                  value={categoryForm.dynamicPricing ? "enabled" : "disabled"}
+                  onValueChange={(value) =>
+                    setCategoryForm({
+                      ...categoryForm,
+                      dynamicPricing: value === "enabled",
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select pricing type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="enabled">Enabled</SelectItem>
+                    <SelectItem value="disabled">Disabled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={handleAddCategory}
+                disabled={!categoryForm.name}
+                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium disabled:bg-gray-700 disabled:cursor-not-allowed"
               >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select pricing type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="enabled">Enabled</SelectItem>
-                  <SelectItem value="disabled">Disabled</SelectItem>
-                </SelectContent>
-              </Select>
+                Create Category
+              </Button>
             </div>
-            <Button
-              onClick={handleAddCategory}
-              disabled={
-                !categoryForm.name
-              }
-              className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium disabled:bg-gray-700 disabled:cursor-not-allowed"
-            >
-              Create Category
-            </Button>
           </DialogHeader>
         </DialogContent>
       </Dialog>
 
+      {/* Add Stock */}
       <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -895,18 +984,18 @@ export default function Inventory() {
               Increase the stock quantity for the selected product.
             </DialogDescription>
           </DialogHeader>
+
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-2">
               Product:{" "}
-              <span className="font-semibold">
-                {selectedProduct?.productName}
-              </span>
+              <span className="font-semibold">{selectedProduct?.productName}</span>
             </p>
             <p className="text-sm text-gray-600">
               Current Stock:{" "}
               <span className="font-semibold">{selectedProduct?.quantity}</span>
             </p>
           </div>
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -924,20 +1013,20 @@ export default function Inventory() {
                 placeholder="Enter quantity"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes (Optional)
               </label>
               <Textarea
                 value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows="3"
+                rows={3}
                 placeholder="e.g., Weekly restock"
               />
             </div>
+
             <Button
               onClick={handleAddStock}
               className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition font-medium"
@@ -948,6 +1037,7 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
+      {/* Remove Stock */}
       <Dialog open={showRemoveModal} onOpenChange={setShowRemoveModal}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -956,18 +1046,18 @@ export default function Inventory() {
               Decrease the stock quantity for the selected product.
             </DialogDescription>
           </DialogHeader>
+
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-2">
               Product:{" "}
-              <span className="font-semibold">
-                {selectedProduct?.productName}
-              </span>
+              <span className="font-semibold">{selectedProduct?.productName}</span>
             </p>
             <p className="text-sm text-gray-600">
               Current Stock:{" "}
               <span className="font-semibold">{selectedProduct?.quantity}</span>
             </p>
           </div>
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -985,6 +1075,7 @@ export default function Inventory() {
                 placeholder="Enter quantity"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Reference ID (Optional)
@@ -999,20 +1090,20 @@ export default function Inventory() {
                 placeholder="e.g., ORDER-12345"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes (Optional)
               </label>
               <Textarea
                 value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows="3"
+                rows={3}
                 placeholder="e.g., Sold to customer"
               />
             </div>
+
             <Button
               onClick={handleRemoveStock}
               className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition font-medium"
@@ -1023,6 +1114,7 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
+      {/* Adjust Stock */}
       <Dialog open={showAdjustModal} onOpenChange={setShowAdjustModal}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -1031,18 +1123,18 @@ export default function Inventory() {
               Set a new stock quantity for the selected product.
             </DialogDescription>
           </DialogHeader>
+
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-2">
               Product:{" "}
-              <span className="font-semibold">
-                {selectedProduct?.productName}
-              </span>
+              <span className="font-semibold">{selectedProduct?.productName}</span>
             </p>
             <p className="text-sm text-gray-600">
               Current Stock:{" "}
               <span className="font-semibold">{selectedProduct?.quantity}</span>
             </p>
           </div>
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -1060,20 +1152,20 @@ export default function Inventory() {
                 placeholder="Enter new quantity"
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes (Optional)
               </label>
               <Textarea
                 value={formData.notes}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows="3"
+                rows={3}
                 placeholder="e.g., Inventory correction"
               />
             </div>
+
             <Button
               onClick={handleAdjustStock}
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium"
@@ -1084,6 +1176,7 @@ export default function Inventory() {
         </DialogContent>
       </Dialog>
 
+      {/* History */}
       <Dialog open={showHistoryModal} onOpenChange={setShowHistoryModal}>
         <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -1092,21 +1185,21 @@ export default function Inventory() {
               View the transaction history for the selected product.
             </DialogDescription>
           </DialogHeader>
+
           <div className="mb-4">
             <p className="text-sm text-gray-600">
               Product:{" "}
-              <span className="font-semibold">
-                {selectedProduct?.productName}
-              </span>
+              <span className="font-semibold">{selectedProduct?.productName}</span>
             </p>
           </div>
+
           <div
             className="max-h-96 overflow-y-auto [&::-webkit-scrollbar]:hidden"
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {loadingHistory ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4" />
                 <p className="text-gray-500">Loading transaction history...</p>
               </div>
             ) : transactionHistory.length === 0 ? (
@@ -1122,13 +1215,14 @@ export default function Inventory() {
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${transaction.transactionType === "PURCHASE" ||
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium ${
+                          transaction.transactionType === "PURCHASE" ||
                           transaction.transactionType === "INITIAL"
-                          ? "bg-green-900 text-green-100"
-                          : transaction.transactionType === "SALE"
+                            ? "bg-green-900 text-green-100"
+                            : transaction.transactionType === "SALE"
                             ? "bg-red-900 text-red-100"
                             : "bg-blue-900 text-blue-100"
-                          }`}
+                        }`}
                       >
                         {transaction.transactionType}
                       </span>
@@ -1136,25 +1230,29 @@ export default function Inventory() {
                         {new Date(transaction.createdAt).toLocaleString()}
                       </span>
                     </div>
+
                     <div className="grid grid-cols-3 gap-2 text-sm">
                       <div>
                         <span className="text-gray-400">Change:</span>
                         <span
-                          className={`ml-1 font-semibold ${Number(transaction.quantityChange) >= 0
-                            ? "text-green-400"
-                            : "text-red-400"
-                            }`}
+                          className={`ml-1 font-semibold ${
+                            Number(transaction.quantityChange) >= 0
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
                         >
                           {Number(transaction.quantityChange) >= 0 ? "+" : ""}
                           {Number(transaction.quantityChange).toFixed(2)}
                         </span>
                       </div>
+
                       <div>
                         <span className="text-gray-400">Before:</span>
                         <span className="ml-1 font-semibold text-gray-300">
                           {Number(transaction.quantityBefore).toFixed(2)}
                         </span>
                       </div>
+
                       <div>
                         <span className="text-gray-400">After:</span>
                         <span className="ml-1 font-semibold text-gray-300">
@@ -1162,27 +1260,27 @@ export default function Inventory() {
                         </span>
                       </div>
                     </div>
+
                     {transaction.notes && (
                       <p className="text-sm text-gray-300 mt-2">
                         {transaction.notes}
                       </p>
                     )}
+
                     {transaction.referenceId && (
                       <p className="text-xs text-gray-500 mt-1">
                         Ref: {transaction.referenceId}
                       </p>
                     )}
-                    {(transaction.createdByName ||
-                      transaction.createdByEmail) && (
-                        <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
-                          <User className="w-3 h-3" />
-                          <span>
-                            By:{" "}
-                            {transaction.createdByName ||
-                              transaction.createdByEmail}
-                          </span>
-                        </div>
-                      )}
+
+                    {(transaction.createdByName || transaction.createdByEmail) && (
+                      <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
+                        <User className="w-3 h-3" />
+                        <span>
+                          By: {transaction.createdByName || transaction.createdByEmail}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
