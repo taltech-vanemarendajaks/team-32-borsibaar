@@ -98,20 +98,20 @@ export default function Dashboard() {
             if (Array.isArray(statsJson)) setSalesStats(statsJson);
           }
         } catch {
-          // ignore stats errors silently
+// Stats are optional. Failure should not block dashboard loading.
         }
 
-        try {
-          const stationStatsRes = await fetch(
-            `/api/backend/inventory/station-sales-stats`,
-            { cache: "no-store" }
-          );
-          if (stationStatsRes.ok) {
-            const stationStatsJson = await stationStatsRes.json();
-            if (Array.isArray(stationStatsJson)) setStationStats(stationStatsJson);
-          }
-        } catch {
-          // ignore stats errors silently
+          try {
+              const stationStatsRes = await fetch(
+                  `/api/backend/inventory/station-sales-stats`,
+                  {cache: "no-store"}
+              );
+              if (stationStatsRes.ok) {
+                  const stationStatsJson = await stationStatsRes.json();
+                  if (Array.isArray(stationStatsJson)) setStationStats(stationStatsJson);
+              }
+          } catch {
+// Stats are optional. Failure should not block dashboard loading.
         }
       } else {
         setOrgName("No organization");
