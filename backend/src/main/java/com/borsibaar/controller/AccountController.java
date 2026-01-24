@@ -15,14 +15,19 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/account")
 @RequiredArgsConstructor
 public class AccountController {
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
 
-    public record MeResponse(String email, String name, String role, Long organizationId, boolean needsOnboarding) {
-    }
+    public record MeResponse(
+        String email,
+        String name,
+        String role,
+        Long organizationId,
+        boolean needsOnboarding
+    ) {}
 
-    public record onboardingRequest(Long organizationId, boolean acceptTerms) {
-    }
+    public record onboardingRequest(Long organizationId, boolean acceptTerms) {}
 
     @GetMapping
     public ResponseEntity<MeResponse> me() {
@@ -30,21 +35,25 @@ public class AccountController {
             // Allow users without organization (for onboarding check)
             User user = SecurityUtils.getCurrentUser(false);
 
-            return ResponseEntity.ok(new MeResponse(
+            return ResponseEntity.ok(
+                new MeResponse(
                     user.getEmail(),
                     user.getName(),
                     user.getRole() != null ? user.getRole().getName() : null,
                     user.getOrganizationId(),
-                    user.getOrganizationId() == null));
+                    user.getOrganizationId() == null
+                )
+            );
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode()).build();
         } catch (Exception e) {
             // Log unexpected errors for debugging
             // This will be handled by ApiExceptionHandler and return ProblemDetail
             throw new ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Failed to retrieve account information: " + e.getMessage(),
-                    e);
+                org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                "Failed to retrieve account information: " + e.getMessage(),
+                e
+            );
         }
     }
 
@@ -52,19 +61,30 @@ public class AccountController {
     @Transactional
     public ResponseEntity<Void> finish(@RequestBody onboardingRequest req) {
         try {
-            if (req.organizationId() == null || !req.acceptTerms())
-                return ResponseEntity.badRequest().build();
+            if (
+                req.organizationId() == null || !req.acceptTerms()
+            ) return ResponseEntity.badRequest().build();
 
             // Allow users without organization (that's the point of onboarding)
             User user = SecurityUtils.getCurrentUser(false);
 
-            Role adminRole = roleRepository.findByName("ADMIN")
-                    .orElseThrow(() -> new IllegalArgumentException("Admin role ADMIN not found"));
+            Role adminRole = roleRepository
+                .findByName("ADMIN")
+                .orElseThrow(() ->
+                    new IllegalArgumentException("Admin role ADMIN not found")
+                );
 
             // Set org and role if needed (idempotent: do nothing if already set)
             if (user.getOrganizationId() == null) {
                 // At least one user must be admin
-                if (userRepository.findByOrganizationIdAndRole(req.organizationId(), adminRole).isEmpty()) {
+                if (
+                    userRepository
+                        .findByOrganizationIdAndRole(
+                            req.organizationId(),
+                            adminRole
+                        )
+                        .isEmpty()
+                ) {
                     user.setRole(adminRole);
                 }
                 user.setOrganizationId(req.organizationId());
@@ -79,10 +99,10 @@ public class AccountController {
             // Log unexpected errors for debugging
             // This will be handled by ApiExceptionHandler and return ProblemDetail
             throw new ResponseStatusException(
-                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Failed to complete onboarding: " + e.getMessage(),
-                    e);
+                org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                "Failed to complete onboarding: " + e.getMessage(),
+                e
+            );
         }
     }
-
 }
