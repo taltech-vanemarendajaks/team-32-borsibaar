@@ -98,20 +98,24 @@ export default function Dashboard() {
             if (Array.isArray(statsJson)) setSalesStats(statsJson);
           }
         } catch {
-// Stats are optional. Failure should not block dashboard loading.
+          // Ignore sales stats errors silently to prevent them from breaking the dashboard.
+          // Sales stats are supplementary data - if they fail to load, the user can still
+          // access their main dashboard functionality.
         }
 
-          try {
-              const stationStatsRes = await fetch(
-                  `/api/backend/inventory/station-sales-stats`,
-                  {cache: "no-store"}
-              );
-              if (stationStatsRes.ok) {
-                  const stationStatsJson = await stationStatsRes.json();
-                  if (Array.isArray(stationStatsJson)) setStationStats(stationStatsJson);
-              }
-          } catch {
-// Stats are optional. Failure should not block dashboard loading.
+        try {
+          const stationStatsRes = await fetch(
+            `/api/backend/inventory/station-sales-stats`,
+            { cache: "no-store" }
+          );
+          if (stationStatsRes.ok) {
+            const stationStatsJson = await stationStatsRes.json();
+            if (Array.isArray(stationStatsJson)) setStationStats(stationStatsJson);
+          }
+        } catch {
+          // Ignore station stats errors silently to maintain dashboard stability.
+          // Station statistics are optional analytics data - failures here shouldn't
+          // prevent users from accessing core dashboard features.
         }
       } else {
         setOrgName("No organization");
