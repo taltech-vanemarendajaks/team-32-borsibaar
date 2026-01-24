@@ -98,7 +98,8 @@ export default function Dashboard() {
             if (Array.isArray(statsJson)) setSalesStats(statsJson);
           }
         } catch {
-// Stats are optional. Failure should not block dashboard loading.
+// Stats are non-critical for dashboard functionality.
+// If this request fails, we allow the page to load without analytics data.
         }
 
           try {
@@ -111,7 +112,8 @@ export default function Dashboard() {
                   if (Array.isArray(stationStatsJson)) setStationStats(stationStatsJson);
               }
           } catch {
-// Stats are optional. Failure should not block dashboard loading.
+// Stats are non-critical for dashboard functionality.
+// If this request fails, we allow the page to load without analytics data.
         }
       } else {
         setOrgName("No organization");
