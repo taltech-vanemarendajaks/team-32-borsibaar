@@ -49,7 +49,11 @@ interface InventoryTransactionResponseDto {
 
 export const dynamic = "force-dynamic";
 
-// ✅ COMMIT 1: Types + sorting state (key/dir)
+const formatQty = (v: number | string) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? (Number.isInteger(n) ? String(n) : n.toFixed(2)) : "0";
+};
+
 type InventoryItem = {
   id: number;
   productId: number;
@@ -71,7 +75,6 @@ export default function Inventory() {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ COMMIT 1: sorting state
   const [sortKey, setSortKey] = useState<SortKey>("productName");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
@@ -81,7 +84,7 @@ export default function Inventory() {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const [selectedProduct, setSelectedProduct] = useState<InventoryItem | null>(
-    null
+    null,
   );
 
   const [transactionHistory, setTransactionHistory] = useState<
@@ -160,7 +163,7 @@ export default function Inventory() {
       setLoadingHistory(true);
       const response = await fetch(
         `/api/backend/inventory/product/${productId}/history`,
-        { credentials: "include" }
+        { credentials: "include" },
       );
 
       if (!response.ok) throw new Error("Failed to fetch history");
@@ -406,11 +409,10 @@ export default function Inventory() {
     await fetchTransactionHistory(item.productId);
   };
 
-  // ✅ COMMIT 2: filter + sort
   const filteredInventory =
     searchTerm?.trim().length > 0
       ? inventory.filter((item) =>
-          item.productName.toLowerCase().includes(searchTerm.toLowerCase())
+          item.productName.toLowerCase().includes(searchTerm.toLowerCase()),
         )
       : inventory;
 
@@ -490,7 +492,9 @@ export default function Inventory() {
               <Plus className="w-4 h-4" />
               <span className="flex">New Product</span>
             </Button>
-            <div className="text-sm text-gray-400">Total Items: {inventory.length}</div>
+            <div className="text-sm text-gray-400">
+              Total Items: {inventory.length}
+            </div>
           </div>
         </div>
 
@@ -512,11 +516,13 @@ export default function Inventory() {
           />
         </div>
 
-        {/* ✅ COMMIT 1: sorting controls */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
           <div className="text-sm text-gray-400">Sort by:</div>
 
-          <Select value={sortKey} onValueChange={(v) => setSortKey(v as SortKey)}>
+          <Select
+            value={sortKey}
+            onValueChange={(v) => setSortKey(v as SortKey)}
+          >
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Sort field" />
             </SelectTrigger>
@@ -528,7 +534,10 @@ export default function Inventory() {
             </SelectContent>
           </Select>
 
-          <Select value={sortDir} onValueChange={(v) => setSortDir(v as SortDir)}>
+          <Select
+            value={sortDir}
+            onValueChange={(v) => setSortDir(v as SortDir)}
+          >
             <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Direction" />
             </SelectTrigger>
@@ -619,9 +628,11 @@ export default function Inventory() {
                         </span>
                       </td>
 
+                      
+
                       <td className="py-3 px-4 text-center">
                         <span className="text-lg font-semibold text-gray-300">
-                          {Number(item.quantity).toFixed(2)}
+                          {formatQty(item.quantity)}
                         </span>
                       </td>
 
@@ -748,7 +759,10 @@ export default function Inventory() {
                 min="0"
                 value={productForm.currentPrice}
                 onChange={(e) =>
-                  setProductForm({ ...productForm, currentPrice: e.target.value })
+                  setProductForm({
+                    ...productForm,
+                    currentPrice: e.target.value,
+                  })
                 }
                 className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0.00"
@@ -799,7 +813,10 @@ export default function Inventory() {
               <Textarea
                 value={productForm.description}
                 onChange={(e) =>
-                  setProductForm({ ...productForm, description: e.target.value })
+                  setProductForm({
+                    ...productForm,
+                    description: e.target.value,
+                  })
                 }
                 className="w-full px-3 py-2 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
@@ -871,8 +888,8 @@ export default function Inventory() {
           <DialogHeader>
             <DialogTitle>Delete Product</DialogTitle>
             <DialogDescription>
-              This action will permanently delete the product and its related data.
-              Are you sure you want to continue?
+              This action will permanently delete the product and its related
+              data. Are you sure you want to continue?
             </DialogDescription>
           </DialogHeader>
 
@@ -988,7 +1005,9 @@ export default function Inventory() {
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-2">
               Product:{" "}
-              <span className="font-semibold">{selectedProduct?.productName}</span>
+              <span className="font-semibold">
+                {selectedProduct?.productName}
+              </span>
             </p>
             <p className="text-sm text-gray-600">
               Current Stock:{" "}
@@ -1020,7 +1039,9 @@ export default function Inventory() {
               </label>
               <Textarea
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
                 placeholder="e.g., Weekly restock"
@@ -1050,7 +1071,9 @@ export default function Inventory() {
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-2">
               Product:{" "}
-              <span className="font-semibold">{selectedProduct?.productName}</span>
+              <span className="font-semibold">
+                {selectedProduct?.productName}
+              </span>
             </p>
             <p className="text-sm text-gray-600">
               Current Stock:{" "}
@@ -1097,7 +1120,9 @@ export default function Inventory() {
               </label>
               <Textarea
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
                 placeholder="e.g., Sold to customer"
@@ -1127,7 +1152,9 @@ export default function Inventory() {
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-2">
               Product:{" "}
-              <span className="font-semibold">{selectedProduct?.productName}</span>
+              <span className="font-semibold">
+                {selectedProduct?.productName}
+              </span>
             </p>
             <p className="text-sm text-gray-600">
               Current Stock:{" "}
@@ -1159,7 +1186,9 @@ export default function Inventory() {
               </label>
               <Textarea
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 rows={3}
                 placeholder="e.g., Inventory correction"
@@ -1189,7 +1218,9 @@ export default function Inventory() {
           <div className="mb-4">
             <p className="text-sm text-gray-600">
               Product:{" "}
-              <span className="font-semibold">{selectedProduct?.productName}</span>
+              <span className="font-semibold">
+                {selectedProduct?.productName}
+              </span>
             </p>
           </div>
 
@@ -1220,8 +1251,8 @@ export default function Inventory() {
                           transaction.transactionType === "INITIAL"
                             ? "bg-green-900 text-green-100"
                             : transaction.transactionType === "SALE"
-                            ? "bg-red-900 text-red-100"
-                            : "bg-blue-900 text-blue-100"
+                              ? "bg-red-900 text-red-100"
+                              : "bg-blue-900 text-blue-100"
                         }`}
                       >
                         {transaction.transactionType}
@@ -1273,11 +1304,14 @@ export default function Inventory() {
                       </p>
                     )}
 
-                    {(transaction.createdByName || transaction.createdByEmail) && (
+                    {(transaction.createdByName ||
+                      transaction.createdByEmail) && (
                       <div className="flex items-center gap-1 mt-2 text-xs text-gray-400">
                         <User className="w-3 h-3" />
                         <span>
-                          By: {transaction.createdByName || transaction.createdByEmail}
+                          By:{" "}
+                          {transaction.createdByName ||
+                            transaction.createdByEmail}
                         </span>
                       </div>
                     )}
