@@ -99,8 +99,7 @@ export default function Dashboard() {
           }
         } catch {
           // Ignore sales stats errors silently to prevent them from breaking the dashboard.
-          // Sales stats are supplementary data - if they fail to load, the user can still
-          // access their main dashboard functionality.
+          // If this request fails, we allow the page to load without analytics data.
         }
 
         try {
