@@ -6,16 +6,16 @@
 All project changes were merged into the 'main' branch using GitHub pull requests
 
 Links to pull requests:
-PR #1 - Feature: team32-9-merge-conflict-2
-https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/1
-PR #2 - Feature: controller_refac
-https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/2
-PR #3 - Feature: team32-11-inventory-sorting
-https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/3
-PR #4 - Feature: team32-9-merge-conflict-3
-https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/4
-PR #5 - Feature: team32-12-public-health
-https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/5
+- PR #1 - Feature: team32-9-merge-conflict-2
+  - https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/1
+- PR #2 - Feature: controller_refac
+  - https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/2
+- PR #3 - Feature: team32-11-inventory-sorting
+  - https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/3
+- PR #4 - Feature: team32-9-merge-conflict-3
+  - https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/4
+- PR #5 - Feature: team32-12-public-health
+  - https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/5
 
 
 ## Merge Conflict Explanation
@@ -37,7 +37,7 @@ This ensured the project remained functional and the final result made sense.
 
 ## Team Members and Contributions
 
-### Team Member 1 Team lead / Integrator
+### Team Member 1
 - **Name:** Tiina
 - **Work done:**
   - Worked on a separate feature branch
