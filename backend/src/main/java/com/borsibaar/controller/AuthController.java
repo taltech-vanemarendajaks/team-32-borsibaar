@@ -5,18 +5,19 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
     private final AuthService authService;
+
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
@@ -25,7 +26,10 @@ public class AuthController {
     }
 
     @GetMapping("/login/success")
-    public void success(HttpServletResponse response, OAuth2AuthenticationToken auth) throws IOException {
+    public void success(
+        HttpServletResponse response,
+        OAuth2AuthenticationToken auth
+    ) throws IOException {
         var result = authService.processOAuthLogin(auth);
 
         Cookie cookie = new Cookie("jwt", result.dto().token());
@@ -35,12 +39,17 @@ public class AuthController {
         cookie.setMaxAge(24 * 60 * 60); // 1 day
         response.addCookie(cookie);
 
-        String redirect = result.needsOnboarding() ? "/onboarding" : "/dashboard";
+        String redirect = result.needsOnboarding()
+            ? "/onboarding"
+            : "/dashboard";
         response.sendRedirect(frontendUrl + redirect);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<?> logout(
+        HttpServletRequest request,
+        HttpServletResponse response
+    ) {
         // Invalidate the server-side session (removes OAuth2 authentication)
         HttpSession session = request.getSession(false);
         if (session != null) {
@@ -58,9 +67,10 @@ public class AuthController {
         jwtCookie.setMaxAge(0); // Expire immediately
         response.addCookie(jwtCookie);
 
-        return ResponseEntity.ok().body(new LogoutResponse("Logged out successfully"));
+        return ResponseEntity.ok().body(
+            new LogoutResponse("Logged out successfully")
+        );
     }
 
-    private record LogoutResponse(String message) {
-    }
+    private record LogoutResponse(String message) {}
 }
