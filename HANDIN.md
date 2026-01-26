@@ -22,6 +22,9 @@ https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/4
 PR #5 - Feature: team32-12-public-health  
 https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/5
 
+PR #6 - Feature: handin_file
+https://github.com/taltech-vanemarendajaks/team-32-borsibaar/pull/6
+
 ## Merge Conflict Explanation
 
 ### Description of the conflict
@@ -90,7 +93,9 @@ This ensured the project remained functional and the final result made sense.
   - Created the main team repository
   - Created the TEAM.md file
   - Worked on a separate feature branch
+  - Opened a pull request
   - Implemented feature: team32-9-merge-conflict-1 was merged using a **regular merge commit** without a PR.
+  - Implemented feature; handn_file was merged using a **regular commit** 
   - Participated in intentional merge conflict
   - Resolved merge conflicts
   - Reviewed pull requests and left comments
