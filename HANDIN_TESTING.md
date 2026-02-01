@@ -1,5 +1,9 @@
 # Test Approach
 
+This chapter defines the overall testing strategy, approach and principles for the Börsibaar project. It describes testing levels, selection criteria and quality and performance testing implementation.
+
+---
+
 ## 1 Overall Testing Strategy
 
 The Börsibaar project follows the **Test Pyramid model** as a guideline for efficient testing:
@@ -99,6 +103,10 @@ Testing results support release and quality decisions:
 * Failures are categorized by impact to support prioritization and decision-making.
 
 # Roles and Responsibilities
+
+This chapter describes the testing team structure and responsibilities of each member in the Börsibaar project. It defines roles, required skills and technical responsibilities to ensure quality testing.
+
+---
 
 ## 1 Testing Team Structure
 
