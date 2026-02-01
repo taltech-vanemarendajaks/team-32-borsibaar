@@ -102,6 +102,94 @@ Testing results support release and quality decisions:
 * Test reports highlight coverage of critical paths and detected risks.
 * Failures are categorized by impact to support prioritization and decision-making.
 
+# Test environment & Testing levels
+
+## Test environment
+
+The Börsibaar project is planned to be tested in several environments to ensure correctness, stability, and maintainability of the system.
+
+### Development environment
+- **Backend:** Spring Boot 3.5.5 (Java 21)
+- **Frontend:** Next.js 15 with TypeScript
+- **Database:** PostgreSQL (Docker Compose)
+- **Authentication:** OAuth2 (Google) and JWT
+- **Purpose:** local development, manual testing, unit and integration testing
+
+### CI environment (planned)
+- **Platform:** GitHub Actions
+- **Purpose:** automated verification on every push and pull request
+- **Planned checks:**
+  - Backend unit and integration tests
+  - Frontend linting and type checking
+  - Build verification for backend and frontend
+  - Code quality checks (e.g. coverage, static analysis)
+
+### Staging / demo environment (future)
+- **Purpose:** end-to-end and smoke testing before demonstrations
+- **Configuration:** separate database and environment variables
+- **Usage:** validation of full user flows in a production-like setup
+
+---
+
+## Testing levels
+
+### Unit testing
+**Goal:** verify individual components and business logic in isolation.
+- Backend: service logic, price calculations, inventory rules, mappers
+- Frontend: utility functions and simple UI components
+- **Tools (planned):** JUnit, Mockito, Vitest/Jest
+
+---
+
+### Integration testing
+**Goal:** verify interaction between application layers and database.
+- Service ↔ Repository ↔ Database
+- Liquibase migrations correctness
+- Inventory and transaction consistency
+- **Tools (planned):** Spring Boot Test, Testcontainers
+
+---
+
+### API / Controller testing
+**Goal:** verify REST API behavior and security constraints.
+- Correct HTTP status codes
+- Request validation and error handling
+- Authentication and authorization checks
+- **Tools (planned):** MockMvc or WebTestClient
+
+---
+
+### Frontend component testing
+**Goal:** verify UI logic and form behavior.
+- Input validation (prices, quantities)
+- Sorting and UI state changes
+- **Tools (planned):** React Testing Library
+
+---
+
+### End-to-End (E2E) testing
+**Goal:** verify complete user flows across frontend and backend.
+- Login and dashboard access
+- Inventory management flow
+- POS and public pricing view
+- **Tools (planned):** Cypress
+
+---
+
+### Smoke testing
+**Goal:** ensure basic system functionality after deployment.
+- Application startup
+- Database connectivity
+- Main pages accessibility
+
+---
+
+### Manual testing
+**Goal:** validate usability, layout, and edge cases.
+- Responsive design (desktop/mobile)
+- Error states and messages
+- User experience in POS and public views
+
 # Roles and Responsibilities
 
 This chapter describes the testing team structure and responsibilities of each member in the Börsibaar project. It defines roles, required skills and technical responsibilities to ensure quality testing.
