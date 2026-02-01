@@ -6,7 +6,7 @@ This chapter defines the testing objectives and scope for the Börsibaar project
 
 ## 1 Test objectives
 
-Test objective is to ensure the correctness, reliability, security and usability of the application. The testing aims to verify that the API endpoints function as expected, authentication methods are enforced, database interactions are reliable, error handling is consistent and user experience is not interrupted by unexpected behaviour. The testing also aims to ensure detect regressions early when changes are introduced to controllers, services, or security configuration.
+Test objective is to ensure the correctness, reliability, security and usability of the application. The testing aims to verify that the API endpoints function as expected, authentication methods are enforced, database interactions are reliable, error handling is consistent and user experience is not interrupted by unexpected behaviour. The testing also aims to detect regressions early when changes are introduced to controllers, services, or security configuration.
 
 ## 2 Scope
 
