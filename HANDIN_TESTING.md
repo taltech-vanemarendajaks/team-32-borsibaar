@@ -436,3 +436,68 @@ At the conclusion of the testing phase, the following final deliverables will be
 
 Test deliverables provide measurable evidence of testing activities and system quality.  
 They ensure transparency, traceability and confidence in the stability, security and correctness of the Börsibaar application.
+
+---
+
+# Entry & Exit Criteria
+
+This chapter defines the conditions for when testing is allowed to start (Entry Criteria) and when testing can be considered complete (Exit Criteria).  
+The purpose is to establish clear quality gates to support consistent testing decisions and release/merge readiness.
+
+---
+
+## 1. Entry Criteria (When testing starts)
+
+Testing may start when the following conditions are met:
+
+### 1.1 Requirements are testable
+- Expected behavior is defined (what should happen / should not happen).
+- The scope of the change is understood (what is affected / not affected).
+
+### 1.2 Code is ready to be tested
+- The change exists in a testable form (branch/PR/build available).
+- The version under test is stable enough to avoid “moving target” testing.
+
+### 1.3 Test environment is available
+- The development/test environment is runnable (application + required dependencies).
+- Required configuration is available (no missing variables/secrets/config files blocking startup).
+
+### 1.4 Test data is possible
+- Test data strategy is agreed (seed/fixtures or created during tests).
+- A basic reset/cleanup approach exists to keep tests repeatable.
+
+### 1.5 Test approach is agreed
+- It is clear what type of checks will be used (automated and/or manual).
+- Responsibilities and result recording location are agreed.
+
+---
+
+## 2. Exit Criteria (When testing is complete)
+
+Testing is considered complete when the following conditions are met:
+
+### 2.1 Planned checks are completed
+- All planned checks for the change are executed (automated and/or manual).
+- Results are known (pass/fail), not “to be checked later”.
+
+### 2.2 Critical behavior is validated
+- Smoke check of the most important user flow(s) is completed.
+- At least one relevant negative/error case is checked (invalid input, missing access, dependency unavailable).
+
+### 2.3 Defects are acceptable
+- No blocker/critical defects remain open (or they are documented and explicitly accepted).
+- Remaining defects are documented and prioritized.
+
+### 2.4 Evidence is recorded
+- Short test notes exist: what was tested, what failed, and what was out of scope (with reason).
+- Found defects have a reference (ticket/issue) and clear reproduction steps.
+
+### 2.5 Release/merge readiness is clear
+- Based on the above, the change is considered safe per team workflow (ready to merge/release).
+
+---
+
+## 3. Summary
+
+Entry and Exit Criteria provide structured quality gates for testing activities.  
+They help ensure that testing starts with a stable and well-defined setup, and that completion is based on evidence, defect status, and readiness for merge or release.
