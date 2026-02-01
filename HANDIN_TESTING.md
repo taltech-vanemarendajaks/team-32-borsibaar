@@ -1,3 +1,47 @@
+# Testing objectives and scope
+
+This chapter defines the testing objectives and scope for the Börsibaar project. It outlines the testing objectives and scope for the backend, frontend, and system components.
+
+---
+
+## 1 Test objectives
+
+Test objective is to ensure the correctness, reliability, security and usability of the application. The testing aims to verify that the API endpoints function as expected, authentication methods are enforced, database interactions are reliable, error handling is consistent and user experience is not interrupted by unexpected behaviour. The testing also aims to ensure detect regressions early when changes are introduced to controllers, services, or security configuration.
+
+## 2 Scope
+
+The following areas are included in the testing scope:
+
+### 2.1 Backend
+
+* REST API integration.
+* Database integration.
+* Controller behaviour.
+* Authentication and authorization flows (JWT, OAuth).
+* CORS and security policy.
+* Validation and error handling.
+* Application startup and health checks.
+* Performance and load testing.
+
+### 2.2 Frontend
+
+* React components.
+* GUI integration (desktop, mobile).
+* Next.js API routes.
+* Custom hooks functionality.
+* State management.
+* Frontend-backend communication.
+* Authentication flow.
+* Data fetching.
+* Regression testing.
+
+### 2.3 System
+
+* User scenarios.
+* Cross-browser compatibility.
+* Performance
+* Security.
+
 # Test Approach
 
 This chapter defines the overall testing strategy, approach and principles for the Börsibaar project. It describes testing levels, selection criteria and quality and performance testing implementation.
