@@ -2,11 +2,11 @@
 
 ## 1 Overall Testing Strategy
 
-The Borsibaar project follows the **Test Pyramid model** as a guideline for efficient testing:
+The Börsibaar project follows the **Test Pyramid model** as a guideline for efficient testing:
 
-* ~70% Unit Tests – fast feedback on individual components.
-* ~20% Integration Tests – validation of interactions between components and infrastructure.
-* ~10% End-to-End Tests – verification of critical user flows.
+- **70% Unit Tests**: Focused on fast feedback and testing individual components.
+- **20% Integration Tests**: Validating collaboration between components.
+- **10% End-to-End Tests**: Ensuring the application works as expected from the user's perspective.
 
 These ratios are target values and may evolve as the system grows. The pyramid is also used as a **risk-escalation model**, where defects should be detected as early and as close to the source as possible.
 
@@ -15,7 +15,7 @@ These ratios are target values and may evolve as the system grows. The pyramid i
 Testing levels described in *Testing levels* are applied progressively based on feedback speed, risk, and change scope:
 
 * Unit tests act as the primary quality gate for development work and are expected to run frequently.
-* Integration and API/controller tests validate system boundaries such as databases, migrations, and security constraints before changes are considered deployable.
+* Integration tests (including API tests) validate system boundaries such as databases, migrations, and security constraints before changes are considered deployable.
 * Frontend component tests focus on UI behavior, validation logic, and predictable state transitions.
 * End-to-end tests are intentionally limited to critical business flows that span multiple system components.
 * Manual and exploratory testing complements automation in areas with high usability or requirement uncertainty.
@@ -28,7 +28,7 @@ To avoid duplicated coverage and excessive maintenance effort, tests are selecte
 
 * Business rules and calculations are verified using unit tests.
 * Persistence behavior, migrations, and transactional consistency are covered by integration tests.
-* Authentication, authorization, and API contracts are validated via API/controller tests.
+* Authentication, authorization, and API contracts are validated via API tests.
 * UI validation and client-side logic are verified through frontend component tests.
 * Cross-cutting user journeys are validated using end-to-end tests.
 * Usability, layout, and edge cases are explored through manual testing.
@@ -48,6 +48,8 @@ To avoid duplicated coverage and excessive maintenance effort, tests are selecte
 * Coverage and static analysis thresholds met.
 * Smoke testing passed in the relevant environment.
 
+*Final release readiness decisions are made jointly by the Test Lead and Product Owner based on risk assessment and business requirements.*
+
 ## 5 Test Automation and Execution Policy
 
 Automated testing is integrated into the CI/CD pipeline to ensure continuous feedback:
@@ -64,6 +66,30 @@ Non-functional testing is applied selectively and risk-based:
 * Stability testing targets previously unstable or failure-prone areas.
 * Basic security checks are performed in non-production environments.
 
+### 6.1 Quality Metrics and Performance Criteria
+
+**Code Coverage Targets:**
+- Backend: Minimum 80% line coverage.
+- Frontend: Minimum 80% line coverage.
+- Critical Paths: 85% coverage target.
+
+**Performance Criteria:**
+- API Response Time: < 500ms (95th percentile) for critical endpoints.
+- Page Load Time: < 5 seconds for main user interfaces.
+- Database Queries: < 200ms average execution time.
+- Authentication Flow: < 1000ms for complete OAuth2 workflow.
+
+**Security Boundaries:**
+- Input validation on all user-facing endpoints.
+- SQL injection protection via parameterized queries.
+- XSS prevention through proper output encoding.
+- Authorization checks on all protected resources.
+
+**Stability Thresholds:**
+- System uptime: > 95% during testing periods.
+- Memory usage: < 85% of allocated resources under normal load.
+- Error rate: < 2% for critical business flows.
+
 ## 7 Traceability and Reporting
 
 Testing results support release and quality decisions:
@@ -76,7 +102,7 @@ Testing results support release and quality decisions:
 
 ## 1 Testing Team Structure
 
-The Borsibaar project testing team consists of 5 specialists, each with clearly defined responsibilities to ensure the quality, reliability, and maintainability of the application.
+The Börsibaar project testing team consists of 5 specialists, each with clearly defined responsibilities to ensure the quality, reliability, and maintainability of the application.
 
 ### 1.1 Test Lead (1 person)
 
@@ -100,7 +126,7 @@ The Borsibaar project testing team consists of 5 specialists, each with clearly 
 **Primary Responsibilities:**
 
 * Unit testing of the Spring Boot backend application.
-* Integration testing of REST APIs.
+* API integration testing for REST endpoints.
 * Database integration testing with PostgreSQL.
 * JWT authentication and OAuth2 (Google) flow testing.
 * Service and repository layer validation.
