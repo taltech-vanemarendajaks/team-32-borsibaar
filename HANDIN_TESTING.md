@@ -1,3 +1,170 @@
+# Test Approach
+
+## 1 Overall Testing Strategy
+
+The Borsibaar project follows the **Test Pyramid model** as a guideline for efficient testing:
+
+* ~70% Unit Tests – fast feedback on individual components.
+* ~20% Integration Tests – validation of interactions between components and infrastructure.
+* ~10% End-to-End Tests – verification of critical user flows.
+
+These ratios are target values and may evolve as the system grows. The pyramid is also used as a **risk-escalation model**, where defects should be detected as early and as close to the source as possible.
+
+## 2 How Testing Levels Are Applied
+
+Testing levels described in *Testing levels* are applied progressively based on feedback speed, risk, and change scope:
+
+* Unit tests act as the primary quality gate for development work and are expected to run frequently.
+* Integration and API/controller tests validate system boundaries such as databases, migrations, and security constraints before changes are considered deployable.
+* Frontend component tests focus on UI behavior, validation logic, and predictable state transitions.
+* End-to-end tests are intentionally limited to critical business flows that span multiple system components.
+* Manual and exploratory testing complements automation in areas with high usability or requirement uncertainty.
+
+**End-to-end tests are used primarily as confidence-building checks for critical business flows and are not intended to replace unit or integration tests, in order to keep the test suite maintainable and execution times reasonable.**
+
+## 3 Test Selection Rules
+
+To avoid duplicated coverage and excessive maintenance effort, tests are selected according to the following principles:
+
+* Business rules and calculations are verified using unit tests.
+* Persistence behavior, migrations, and transactional consistency are covered by integration tests.
+* Authentication, authorization, and API contracts are validated via API/controller tests.
+* UI validation and client-side logic are verified through frontend component tests.
+* Cross-cutting user journeys are validated using end-to-end tests.
+* Usability, layout, and edge cases are explored through manual testing.
+
+## 4 Entry and Exit Criteria
+
+**Entry criteria:**
+
+* Feature implementation completed and code reviewed.
+* Relevant unit tests implemented.
+* Required test data strategy defined.
+
+**Exit criteria:**
+
+* CI pipeline completed successfully according to branch policy.
+* No unresolved critical or high-severity defects.
+* Coverage and static analysis thresholds met.
+* Smoke testing passed in the relevant environment.
+
+## 5 Test Automation and Execution Policy
+
+Automated testing is integrated into the CI/CD pipeline to ensure continuous feedback:
+
+* Every push triggers fast automated checks.
+* Pull requests and main branch builds execute extended test suites including E2E tests.
+* Before major releases, selected non-functional tests are executed for critical flows.
+
+## 6 Non-Functional Testing Strategy
+
+Non-functional testing is applied selectively and risk-based:
+
+* Performance testing focuses on critical APIs and user journeys.
+* Stability testing targets previously unstable or failure-prone areas.
+* Basic security checks are performed in non-production environments.
+
+## 7 Traceability and Reporting
+
+Testing results support release and quality decisions:
+
+* Acceptance criteria are traceable to tests at appropriate levels.
+* Test reports highlight coverage of critical paths and detected risks.
+* Failures are categorized by impact to support prioritization and decision-making.
+
+# Roles and Responsibilities
+
+## 1 Testing Team Structure
+
+The Borsibaar project testing team consists of 5 specialists, each with clearly defined responsibilities to ensure the quality, reliability, and maintainability of the application.
+
+### 1.1 Test Lead (1 person)
+
+**Primary Responsibilities:**
+
+* Define and maintain the overall testing strategy.
+* Plan, coordinate, and prioritize testing activities across teams.
+* Ensure testing aligns with business and technical requirements.
+* Communicate testing status, risks, and results to stakeholders.
+* Review and approve test plans and test cases.
+* Produce and present test reports and quality metrics.
+
+**Required Skills:**
+
+* Strong knowledge of software testing methodologies and best practices.
+* Experience with project coordination and risk management.
+* Solid technical background (frontend and backend awareness).
+
+### 1.2 Backend Test Engineer (1 person)
+
+**Primary Responsibilities:**
+
+* Unit testing of the Spring Boot backend application.
+* Integration testing of REST APIs.
+* Database integration testing with PostgreSQL.
+* JWT authentication and OAuth2 (Google) flow testing.
+* Service and repository layer validation.
+* Liquibase migration testing.
+
+**Technical Responsibilities:**
+
+* Maintain backend tests under the dedicated test directory.
+* Use JUnit 5 and Spring Boot Test.
+* Use Testcontainers with PostgreSQL for integration tests.
+* Create mocks and stubs using Mockito.
+
+### 1.3 Frontend Test Engineer (1 person)
+
+**Primary Responsibilities:**
+
+* Unit testing of React components in Next.js with TypeScript.
+* Testing Next.js API routes.
+* UI integration testing.
+* Validation of frontend–backend communication.
+* Testing custom hooks and utility functions.
+
+**Technical Responsibilities:**
+
+* Use Jest and React Testing Library.
+* Mock APIs using MSW (Mock Service Worker).
+* Validate component rendering, user interactions, and state changes.
+* Ensure TypeScript compile-time correctness via CI checks.
+
+### 1.4 End-to-End & Non-Functional Test Engineer (1 person)
+
+**Primary Responsibilities:**
+
+* Automation of complete end-user scenarios.
+* Cross-browser compatibility testing.
+* Mobile responsiveness testing.
+* Coordination and execution of non-functional tests (performance, stability).
+* Support integration testing across system boundaries.
+
+**Technical Responsibilities:**
+
+* Create and maintain Cypress E2E test suites.
+* Manage test environments using Docker Compose.
+* Integrate E2E tests into the CI/CD pipeline.
+* Execute and analyze performance and load tests.
+
+### 1.5 Manual Test Engineer (1 person)
+
+**Primary Responsibilities:**
+
+* Exploratory testing of new and high-risk features.
+* Usability and user experience validation.
+* Basic security sanity checks in non-production environments.
+* Bug reporting, verification, and regression testing.
+* Smoke testing after deployments.
+* Coordination of User Acceptance Testing (UAT).
+
+**Technical Responsibilities:**
+
+* Documentation of manual test cases and scenarios.
+* Usage of bug tracking and test management tools.
+* Collaboration with product owners and stakeholders during UAT.
+
+
 # Risks and Assumptions
 
 This chapter describes the key assumptions and potential risks related to testing the Börsibaar application.  
