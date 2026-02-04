@@ -54,6 +54,12 @@ const formatQty = (v: number | string) => {
   return Number.isFinite(n) ? (Number.isInteger(n) ? String(n) : n.toFixed(2)) : "0";
 };
 
+type CategoryDto = {
+    id: number;
+    name: string;
+    dynamicPricing?: boolean;
+};
+
 type InventoryItem = {
   id: number;
   productId: number;
@@ -102,7 +108,7 @@ export default function Inventory() {
   const [showDeleteProductModal, setShowDeleteProductModal] = useState(false);
 
   // kept as unknown arrays because backend DTOs missing
-  const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<CategoryDto[]>([]);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
 
   const [categoryForm, setCategoryForm] = useState({
@@ -146,17 +152,33 @@ export default function Inventory() {
     }
   };
 
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch("/api/backend/categories");
-      if (response.ok) {
-        const data = await response.json();
-        setCategories(Array.isArray(data) ? data : []);
-      }
-    } catch (err) {
-      console.error("Error fetching categories:", err);
-    }
-  };
+    const fetchCategories = async () => {
+        try {
+            const response = await fetch("/api/backend/categories");
+            if (!response.ok) return;
+
+            const data: unknown = await response.json();
+
+            const parsed =
+                Array.isArray(data)
+                    ? data
+                        .filter((x): x is CategoryDto => {
+                            if (typeof x !== "object" || x === null) return false;
+                            const obj = x as Record<string, unknown>;
+                            return (
+                                typeof obj.id === "number" &&
+                                typeof obj.name === "string" &&
+                                (obj.dynamicPricing === undefined ||
+                                    typeof obj.dynamicPricing === "boolean")
+                            );
+                        })
+                    : [];
+
+            setCategories(parsed);
+        } catch (err) {
+            console.error("Error fetching categories:", err);
+        }
+    };
 
   const fetchTransactionHistory = async (productId: number) => {
     try {
@@ -740,11 +762,11 @@ export default function Inventory() {
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat: any) => (
-                    <SelectItem key={cat.id} value={String(cat.id)}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
+                    {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={String(cat.id)}>
+                            {cat.name}
+                        </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
